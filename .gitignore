@@ -1,0 +1,5 @@
+.env
+*.csv
+*.txt
+banned_players.json
+node_modules/
