@@ -56,7 +56,6 @@ function waitForDiscordReady() {
 
 client.login(process.env.DC_TOKEN);
 client.once("ready", async () => {
-	console.log("bot ready!");
 	try {
 		channel = await client.channels.fetch(process.env.CHANNEL_ID);
 		discordGuild = await client.guilds.fetch(process.env.GUILD_ID);
@@ -216,14 +215,17 @@ async function manageUserRoles(discordMember, skyblockBracket, catacombsBracket,
 		console.log(`Managing roles for ${discordMember.displayName}: SB Bracket ${skyblockBracket}, Catacombs ${catacombsBracket}, In Guild: ${isInGuild}`);
 		const allRoles = discordGuild.roles.cache;
 		const notInGuildRole = allRoles.find(r => r.name === NOT_IN_GUILD_ROLE);
+		const botRole = allRoles.find(r => r.name === "Bot");
 
 		if (!hasAnyRoles(discordMember)) {
 			console.log(`${discordMember.displayName} has no roles (unverified), skipping role management`);
 			return;
 		}
 
+		const hasBotRole = botRole && discordMember.roles.cache.has(botRole.id);
+
 		if (!isInGuild) {
-			if (notInGuildRole && !discordMember.roles.cache.has(notInGuildRole.id)) {
+			if (notInGuildRole && !discordMember.roles.cache.has(notInGuildRole.id) && !hasBotRole) {
 				await discordMember.roles.add(notInGuildRole);
 				console.log(`Added "Not in guild" role to ${discordMember.displayName}`);
 			}
