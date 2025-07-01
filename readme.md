@@ -1,4 +1,12 @@
-# Step by step running guide
+# What is this project?
+
+This is a discord bot made to update roles in Hypixel Skyblock related servers. It fetches fresh guild data from the official API, then compares them with the current server roles, and updates if changes needed.
+
+## Technologies Used
+
+JavaScript
+
+## Step by step running guide
 
 Create .env with these contents:
 
