@@ -119,9 +119,6 @@ async function detectChangesAndLog(previousData, currentData) {
 		if (prev.has(uuid)) {
 			const a = previousData[uuid],
 				b = currentData[uuid];
-			if (a.username !== b.username) {
-				await logChange(`${a.username} has changed their username to ${b.username}.`);
-			}
 			if (a.catacombsBracket !== b.catacombsBracket) {
 				await logChange(`Congratulations ${b.username} on reaching Catacombs level bracket ${b.catacombsBracket}! Enjoy your new role!`);
 			}
@@ -403,7 +400,7 @@ async function handleNotInGuildMembers(currentUsernames, memberObjectMap) {
 			if (discordMember) {
 				const previousIGN = previousMembers[m.uuid].username;
 				if (previousIGN !== username && username !== "undefined") {
-					await logChange(`${previousIGN} changed their Minecraft username to ${username}`);
+					await logChange(`${previousIGN} changed their Minecraft username to ${username}.`);
 					await updateDiscordNickname(discordMember, username);
 				}
 			}
