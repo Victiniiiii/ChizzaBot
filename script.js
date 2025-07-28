@@ -329,21 +329,19 @@ async function handleNotInGuildMembers(currentUsernames, memberObjectMap) {
 	const bannedSet = await loadBannedPlayers();
 
 	let previousMembers = {};
-	try {
-		const raw = await fs.readFile(CSV_FILE, "utf8");
-		const lines = raw.trim().split("\n");
-		for (let i = 1; i < lines.length; i++) {
-			const parts = lines[i].split(",");
-			const [uuid, ign, bracket, lvl] = parts;
-			const discordUsername = parts[4] || null;
-			previousMembers[uuid] = {
-				username: ign,
-				catacombsBracket: bracket,
-				skyblockLevel: isNaN(+lvl) ? lvl : getSkyblockBracket(+lvl),
-				discordUsername: discordUsername === "null" ? null : discordUsername,
-			};
-		}
-	} catch {}
+	const raw = await fs.readFile(CSV_FILE, "utf8");
+	const lines = raw.trim().split("\n");
+	for (let i = 1; i < lines.length; i++) {
+		const parts = lines[i].split(",");
+		const [uuid, ign, bracket, lvl] = parts;
+		const discordUsername = parts[4] || null;
+		previousMembers[uuid] = {
+			username: ign,
+			catacombsBracket: bracket,
+			skyblockLevel: isNaN(+lvl) ? lvl : getSkyblockBracket(+lvl),
+			discordUsername: discordUsername === "null" ? null : discordUsername,
+		};
+	}
 	console.log(`Loaded ${Object.keys(previousMembers).length} previous members from CSV`);
 
 	const findRes = await fetch(`https://api.hypixel.net/findGuild?key=${apiKey}&byName=${guildName}`);
@@ -365,29 +363,25 @@ async function handleNotInGuildMembers(currentUsernames, memberObjectMap) {
 		cnt++;
 		console.log(`Processing ${cnt}/${members.length}: ${m.uuid}`);
 		let username = "undefined";
-		try {
-			const resp = await fetch(`https://sessionserver.mojang.com/session/minecraft/profile/${m.uuid}`);
-			if (resp.ok) username = (await resp.json()).name || "undefined";
-		} catch {}
+		const resp = await fetch(`https://sessionserver.mojang.com/session/minecraft/profile/${m.uuid}`);
+		if (resp.ok) username = (await resp.json()).name || "undefined";
 
 		let bracket = "Below 30",
 			maxSB = 0;
-		try {
-			const p = await fetch(`https://api.hypixel.net/v2/skyblock/profiles?key=${apiKey}&uuid=${m.uuid}`);
-			const pj = await p.json();
-			if (pj.success && pj.profiles.length) {
-				let maxXP = 0;
-				for (const prof of pj.profiles) {
-					const dat = prof.members?.[m.uuid];
-					if (!dat) continue;
-					const xp = dat.dungeons?.dungeon_types?.catacombs?.experience || 0;
-					if (xp > maxXP) maxXP = xp;
-					const lvl = Math.floor((dat.leveling?.experience || 0) / 100);
-					if (lvl > maxSB) maxSB = lvl;
-				}
-				bracket = getCatacombsBracket(getDungeonLevel(maxXP));
+		const p = await fetch(`https://api.hypixel.net/v2/skyblock/profiles?key=${apiKey}&uuid=${m.uuid}`);
+		const pj = await p.json();
+		if (pj.success && pj.profiles.length) {
+			let maxXP = 0;
+			for (const prof of pj.profiles) {
+				const dat = prof.members?.[m.uuid];
+				if (!dat) continue;
+				const xp = dat.dungeons?.dungeon_types?.catacombs?.experience || 0;
+				if (xp > maxXP) maxXP = xp;
+				const lvl = Math.floor((dat.leveling?.experience || 0) / 100);
+				if (lvl > maxSB) maxSB = lvl;
 			}
-		} catch {}
+			bracket = getCatacombsBracket(getDungeonLevel(maxXP));
+		}
 
 		const skyBracket = getSkyblockBracket(maxSB);
 
@@ -436,14 +430,16 @@ async function handleNotInGuildMembers(currentUsernames, memberObjectMap) {
 		.map(n => n.toLowerCase());
 	await handleNotInGuildMembers(currentDiscordUsernames, memberObjectMap);
 
-	try {
-		await fs.copyFile(CSV_FILE, OLD_CSV_FILE);
-	} catch {}
+	await fs.copyFile(CSV_FILE, OLD_CSV_FILE);
 	await fs.writeFile(CSV_FILE, csvLines.join("\n"), "utf8");
 	console.log(`Wrote ${csvLines.length - 1} members to CSV with Discord usernames`);
 
-	console.log("Detecting changes...");
-	await detectChangesAndLog(previousMembers, currentData);
+	if (fs.existsSync("guild_members.csv")) {
+		console.log("Detecting changes...");
+		await detectChangesAndLog(previousMembers, currentData);
+	} else {
+		console.log("CSV file does not exist, not sending any messages in the channel.");
+	}
 
 	console.log("Done.");
 	if (client) client.destroy();
