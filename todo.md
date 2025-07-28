@@ -1,0 +1,1 @@
+If a .csv file doesn't exist, dont send any messages
