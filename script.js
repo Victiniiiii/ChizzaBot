@@ -240,11 +240,11 @@ async function checkWordleResults() {
 
 				const mentionsFormatted = formatMentions(failedUserIds);
 				const messageTemplates = failedUserIds.length === 1 ? singleFailureMessages : multipleFailureMessages;
-				const message = messageTemplates[Math.floor(Math.random() * messageTemplates.length)].replace("%s", mentionsFormatted);
+				const replyText = messageTemplates[Math.floor(Math.random() * messageTemplates.length)].replace("%s", mentionsFormatted);
 
 				if (wordleChannel) {
-					await wordleChannel.send(message);
-					console.log("Sent Wordle failure message to wordle channel");
+					await message.reply(replyText);
+					console.log("Replied to Wordle results message");
 				}
 
 				break;
