@@ -487,6 +487,37 @@ async function manageUserRoles(discordMember, skyblockBracket, catacombsBracket,
 				await discordMember.roles.add(notInGuildRole);
 				console.log(`Added "Not in guild" role to ${discordMember.displayName}`);
 			}
+
+			const skyblockRolesToRemove = [];
+			Object.values(SKYBLOCK_ROLES).forEach(roleName => {
+				if (roleName) {
+					const role = allRoles.find(r => r.name === roleName);
+					if (role && discordMember.roles.cache.has(role.id)) {
+						skyblockRolesToRemove.push(role);
+					}
+				}
+			});
+
+			const catacombsRolesToRemove = [];
+			Object.values(CATACOMBS_ROLES).forEach(roleName => {
+				if (roleName) {
+					const role = allRoles.find(r => r.name === roleName);
+					if (role && discordMember.roles.cache.has(role.id)) {
+						catacombsRolesToRemove.push(role);
+					}
+				}
+			});
+
+			if (skyblockRolesToRemove.length > 0) {
+				await discordMember.roles.remove(skyblockRolesToRemove);
+				console.log(`Removed Skyblock roles from ${discordMember.displayName} (not in guild): ${skyblockRolesToRemove.map(r => r.name).join(", ")}`);
+			}
+
+			if (catacombsRolesToRemove.length > 0) {
+				await discordMember.roles.remove(catacombsRolesToRemove);
+				console.log(`Removed Catacombs roles from ${discordMember.displayName} (not in guild): ${catacombsRolesToRemove.map(r => r.name).join(", ")}`);
+			}
+
 			return;
 		} else {
 			if (notInGuildRole && discordMember.roles.cache.has(notInGuildRole.id)) {
