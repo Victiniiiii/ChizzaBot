@@ -363,18 +363,19 @@ async function logChange(message) {
 async function detectChangesAndLog(previousData, currentData) {
 	const prev = new Set(Object.keys(previousData));
 	const curr = new Set(Object.keys(currentData));
+	const joined = [];
+	const left = [];
 
 	for (const uuid of curr) {
-		if (!prev.has(uuid)) {
-			await logChange(`Welcome to our guild ${currentData[uuid].username}!`);
-		}
+		if (!prev.has(uuid)) joined.push(currentData[uuid].username);
 	}
 
 	for (const uuid of prev) {
-		if (!curr.has(uuid)) {
-			await logChange(`Member left: ${previousData[uuid].username}`);
-		}
+		if (!curr.has(uuid)) left.push(previousData[uuid].username);
 	}
+
+	if (joined.length) await logChange(`Welcome to our guild: ${joined.join(", ")}!`);
+	if (left.length) await logChange(`Members left: ${left.join(", ")}.`);
 
 	for (const uuid of curr) {
 		if (prev.has(uuid)) {
