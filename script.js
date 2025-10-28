@@ -349,6 +349,7 @@ function getCatacombsBracket(level) {
 function getSkyblockBracket(level) {
 	const low = Math.floor(level / 40) * 40;
 	const high = low + 39;
+	if (high == 519) return `${low}+`;
 	return `${low}-${high}`;
 }
 
